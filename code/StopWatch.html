@@ -4,8 +4,14 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ストップウォッチ</title>
+  <title>デジタル時計とストップウォッチ</title>
   <style>
+    /* デジタル時計表示のスタイル */
+    #digital-clock {
+      text-align: center;
+      font-size: 2em;
+      margin: 20px 0;
+    }
     /* ストップウォッチ表示のスタイル */
     #stopwatch-display {
       text-align: center;
@@ -26,8 +32,8 @@
       height: 100px;
       margin-top: 20px;
     }
-    /* ストップウォッチのラベルのスタイル */
-    #stopwatch-label {
+    /* デジタル時計とストップウォッチのラベルのスタイル */
+    .label {
       text-align: center;
       font-size: 1.5em;
       margin-top: 20px;
@@ -35,8 +41,12 @@
   </style>
 </head>
 <body>
+  <!-- デジタル時計のラベル -->
+  <div id="digital-clock-label" class="label">デジタル時計</div>
+  <!-- デジタル時計の時間表示 -->
+  <div id="digital-clock">00:00:00</div>
   <!-- ストップウォッチのラベル -->
-  <div id="stopwatch-label">ストップウォッチ</div>
+  <div id="stopwatch-label" class="label">ストップウォッチ</div>
   <!-- ストップウォッチの時間表示 -->
   <div id="stopwatch-display">00:00:00.000</div>
   <!-- ストップウォッチ操作ボタン -->
@@ -51,7 +61,17 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      // ボタンの取得
+      // デジタル時計の表示更新
+      function updateDigitalClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('digital-clock').textContent = `${hours}:${minutes}:${seconds}`;
+      }
+      setInterval(updateDigitalClock, 1000); // 1秒ごとに更新
+
+      // ストップウォッチの要素
       const startButton = document.getElementById("start");
       const stopButton = document.getElementById("stop");
       const resetButton = document.getElementById("reset");
