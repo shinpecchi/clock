@@ -4,14 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ストップウォッチ</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <div class="current-time">
             <div class="clock">
+                <div class="ticks"></div>
+                <div class="number number1">1</div>
+                <div class="number number2">2</div>
+                <div class="number number3">3</div>
+                <div class="number number4">4</div>
+                <div class="number number5">5</div>
+                <div class="number number6">6</div>
+                <div class="number number7">7</div>
+                <div class="number number8">8</div>
+                <div class="number number9">9</div>
+                <div class="number number10">10</div>
+                <div class="number number11">11</div>
+                <div class="number number12">12</div>
                 <div class="hand hour" id="hourHand"></div>
                 <div class="hand minute" id="minuteHand"></div>
                 <div class="hand second" id="secondHand"></div>
+                <div class="center-dot"></div>
             </div>
             <div class="current-time-display">00:00:00</div>
         </div>
@@ -52,10 +67,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Update current time and analog clock
     function updateCurrentTime() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
+        const jst = new Date(Date.now() + ((new Date().getTimezoneOffset() + (9 * 60)) * 60 * 1000));
+        const hours = jst.getHours();
+        const minutes = jst.getMinutes();
+        const seconds = jst.getSeconds();
 
         const hoursFormatted = String(hours).padStart(2, '0');
         const minutesFormatted = String(minutes).padStart(2, '0');
@@ -66,9 +81,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const minuteDegrees = minutes * 6;
         const secondDegrees = seconds * 6;
 
-        hourHand.style.transform = `rotate(${hourDegrees}deg)`;
-        minuteHand.style.transform = `rotate(${minuteDegrees}deg)`;
-        secondHand.style.transform = `rotate(${secondDegrees}deg)`;
+        hourHand.style.transform = `rotate(${hourDegrees - 270}deg)`;
+        minuteHand.style.transform = `rotate(${minuteDegrees - 270}deg)`;
+        secondHand.style.transform = `rotate(${secondDegrees - 270}deg)`;
     }
     setInterval(updateCurrentTime, 1000);
     updateCurrentTime();
@@ -135,25 +150,72 @@ body {
 
 .clock {
     position: relative;
-    width: 100px;
-    height: 100px;
+    width: 200px;
+    height: 200px;
     border: 2px solid black;
     border-radius: 50%;
     margin: 0 auto 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+.number {
+    position: absolute;
+    text-align: center;
+    transform: translate(-50%, -50%);
+}
+
+.number1 { top: 20%; left: 80%; }
+.number2 { top: 34%; left: 87%; }
+.number3 { top: 50%; left: 93%; }
+.number4 { top: 66%; left: 87%; }
+.number5 { top: 80%; left: 80%; }
+.number6 { top: 87%; left: 50%; }
+.number7 { top: 80%; left: 20%; }
+.number8 { top: 66%; left: 13%; }
+.number9 { top: 50%; left: 7%; }
+.number10 { top: 34%; left: 13%; }
+.number11 { top: 20%; left: 20%; }
+.number12 { top: 7%; left: 50%; }
 
 .hand {
     position: absolute;
-    width: 50%;
-    height: 2px;
-    background: black;
     top: 50%;
     transform-origin: 100%;
-    transform: rotate(90deg);
+    transform: rotate(0deg);
 }
 
 .hour {
+    width: 40px; /* Shorter length for hour hand */
     height: 4px;
+    background: black;
+    left: 60px; /* Center alignment */
+}
+
+.minute {
+    width: 60px; /* Longer length for minute hand */
+    height: 3px;
+    background: black;
+    left: 40px; /* Center alignment */
+}
+
+.second {
+    width: 50px; /* Medium length for second hand */
+    height: 2px;
+    background: red;
+    left: 50px; /* Center alignment */
+}
+
+.center-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: black;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .current-time-display {
