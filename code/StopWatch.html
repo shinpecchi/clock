@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ストップウォッチ</title>
+  <style>
+    /* ストップウォッチ表示のスタイル */
+    #stopwatch-display {
+      text-align: center;
+      font-size: 2em;
+      margin: 20px 0;
+    }
+    /* ボタンのスタイル */
+    .buttons {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .buttons button {
+      margin-right: 10px;
+    }
+    /* ログ出力用テキストエリアのスタイル */
+    .log-output {
+      width: 100%;
+      height: 100px;
+      margin-top: 20px;
+    }
+    /* ストップウォッチのラベルのスタイル */
+    #stopwatch-label {
+      text-align: center;
+      font-size: 1.5em;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ストップウォッチのラベル -->
+  <div id="stopwatch-label">ストップウォッチ</div>
+  <!-- ストップウォッチの時間表示 -->
+  <div id="stopwatch-display">00:00:00.000</div>
+  <!-- ストップウォッチ操作ボタン -->
+  <div class="buttons">
+    <button id="start">スタート</button>
+    <button id="stop">ストップ</button>
+    <button id="reset">リセット</button>
+    <button id="log">コピー</button>
+  </div>
+  <!-- ログ出力用テキストエリア -->
+  <textarea id="logOutput" class="log-output" readonly></textarea>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // ボタンの取得
+      const startButton = document.getElementById("start");
+      const stopButton = document.getElementById("stop");
+      const resetButton = document.getElementById("reset");
+      const logButton = document.getElementById("log");
+      const logOutput = document.getElementById("logOutput");
+      const stopwatchDisplay = document.getElementById("stopwatch-display");
+
+      let stopwatchInterval; // ストップウォッチのインターバルID
+      let elapsedTime = 0; // 経過時間（ミリ秒）
+      let startTime; // スタート時間
+
+      // ミリ秒をフォーマットして時間表示
+      function formatTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        const milliseconds = String(ms % 1000).padStart(3, '0');
+        return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+      }
+
+      // 経過時間をフォーマット（ミリ秒なし）
+      function formatElapsedTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+      }
+
+      // ストップウォッチの更新
+      function updateStopwatch() {
+        elapsedTime = Date.now() - startTime;
+        stopwatchDisplay.textContent = formatTime(elapsedTime);
+      }
+
+      // スタートボタンのクリックイベント
+      startButton.addEventListener("click", function() {
+        if (!stopwatchInterval) {
+          startTime = Date.now() - elapsedTime;
+          logOutput.value = `開始時間: ${new Date(startTime).toLocaleTimeString()}\n`;
+          stopwatchInterval = setInterval(updateStopwatch, 10); // 10msごとに更新
+        }
+      });
+
+      // ストップボタンのクリックイベント
+      stopButton.addEventListener("click", function() {
+        if (stopwatchInterval) {
+          clearInterval(stopwatchInterval); // インターバルをクリア
+          stopwatchInterval = null;
+          const stopTime = new Date();
+          logOutput.value += `終了時間: ${stopTime.toLocaleTimeString()}\n`;
+          logOutput.value += `経過時間: ${formatElapsedTime(elapsedTime)}\n`;
+        }
+      });
+
+      // リセットボタンのクリックイベント
+      resetButton.addEventListener("click", function() {
+        clearInterval(stopwatchInterval); // インターバルをクリア
+        stopwatchInterval = null;
+        elapsedTime = 0; // 経過時間をリセット
+        stopwatchDisplay.textContent = "00:00:00.000"; // 表示をリセット
+        logOutput.value = ''; // ログをクリア
+      });
+
+      // コピーボタンのクリックイベント
+      logButton.addEventListener("click", function() {
+        logOutput.select(); // テキストエリアの内容を選択
+        document.execCommand("copy"); // クリップボードにコピー
+      });
+    });
+  </script>
+</body>
+</html>
