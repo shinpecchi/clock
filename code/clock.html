@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>clock</title>
+</head>
+
+<body>
+  <!-- アナログ時計の表示領域 -->
+  <div id="analog"></div>
+  
+  <!-- 日付表示領域 -->
+  <div id="date-display">2024/6/25(火)</div>
+  
+  <!-- デジタル時計のラベル -->
+  <div id="digital-clock-label">デジタル時計</div>
+  
+  <!-- デジタル時計の表示領域 -->
+  <div id="digital-clock">00:00:00</div>
+
+  <script>
+    (()=>{
+        // 親要素に新しいdivを追加する関数
+        const addDiv = (parentDiv, className, callBack = null) => {
+            const t = document.createElement("div");
+            t.classList.add(className);
+            if (callBack && typeof callBack === "function") callBack(t);
+            parentDiv.appendChild(t);
+            return t;
+        }
+
+        // アナログ時計の文字盤を作成する関数
+        const createFace = () => {
+            const analog = document.getElementById("analog");
+            const vp = [analog.clientWidth, analog.clientHeight];
+            const chokei = Math.min(...vp);
+
+            const analogFace = addDiv(analog, "analog-face", (t) => {
+                [t.style.height, t.style.width] = [chokei + "px", chokei + "px"];
+                [t.style.top, t.style.left] = [(vp[1] - chokei) / 2 + "px", (vp[0] - chokei) / 2 + "px"];
+            });
+
+            const r60 = 360 / 60;
+            const originX = analogFace.clientWidth / 2;
+
+            // 目盛りを追加
+            for (let i = 0; i < 60; i++) {
+                const deg = i * r60;
+                addDiv(analogFace, i % 5 === 0 ? "analog-line1" : "analog-line2", (t) => {
+                    if (i > 0) {
+                        t.style.transformOrigin = `${originX}px center`;
+                        t.style.transform = `rotate(${deg}deg)`;
+                    }
+                });
+            }
+
+            const r12 = 360 / 12;
+            const hankei = originX;
+            const moziPos = hankei - 30;
+            const MathPi = Math.PI / 180;
+
+            // 数字を追加
+            for (let i = 0; i < 12; i++) {
+                const deg = i * r12;
+                addDiv(analogFace, "analog-text", (t) => {
+                    const mojiX = hankei + moziPos * Math.sin(deg * MathPi);
+                    const mojiY = hankei - moziPos * Math.cos(deg * MathPi);
+                    [t.style.top, t.style.left] = [mojiY + "px", mojiX + "px"];
+                    t.innerText = i === 0 ? "12" : i.toString();
+                });
+            }
+
+            // 中心点を追加
+            addDiv(analogFace, "analog-center");
+
+            return analogFace;
+        };
+
+        const firstTransition = "transform 0.5s ease-out";
+
+        // 時計の針オブジェクトのコンストラクタ
+        const handObj = function(className, {parentDiv, LengthPer, handGapPer, divNum}) {
+            const hankei = parentDiv.clientHeight / 2;
+            const handLength = hankei * LengthPer / 100;
+            const handGap = hankei * handGapPer / 100;
+
+            const elm = addDiv(parentDiv, className);
+
+            elm.style.height = (handLength + handGap) + "px";
+            [elm.style.top, elm.style.left] = [(hankei - handLength) + "px", (hankei - elm.clientWidth / 2) + "px"];
+            elm.style.transformOrigin = `center ${handLength}px`;
+            elm.style.transition = firstTransition;
+
+            this.rotateText = [];
+            const angle = 360 / divNum;
+
+            for (let i = 0; i < divNum; i++) {
+                this.rotateText.push(`rotate(${angle * i}deg)`);
+            }
+            this.elm = elm;
+            this.currentValue = null;
+
+            this.transitionFlg = true;
+            this.transitionCount = 0;
+        };
+
+        // 時計の針を動かすメソッド
+        handObj.prototype.moveHand = function(val) {
+            if (this.currentValue === val) return;
+            if (this.transitionFlg && ++this.transitionCount > 1) {
+                this.elm.style.transition = ""; 
+                this.transitionFlg = false;
+            }
+            this.currentValue = val;
+            this.elm.style.transform = this.rotateText[val];
+        };
+
+        // DOMの読み込み完了時に実行
+        window.addEventListener("DOMContentLoaded", () => {
+            const analogFace = createFace();
+
+            const secondHand = new handObj("analog-seconds", {
+                parentDiv: analogFace,
+                LengthPer: 85,
+                handGapPer: 20,
+                divNum: 60
+            });
+
+            const hourHand = new handObj("analog-hours", {
+                parentDiv: analogFace,
+                LengthPer: 55,
+                handGapPer: 10,
+                divNum: 12 * 60
+            });
+
+            const minuteHand = new handObj("analog-minutes", {
+                parentDiv: analogFace,
+                LengthPer: 80,
+                handGapPer: 10,
+                divNum: 60
+            });
+
+            // 1秒ごとに時計を更新
+            setInterval(() => {
+                const date = new Date();
+                secondHand.moveHand(date.getSeconds());
+                hourHand.moveHand((date.getHours() % 12) * 60 + date.getMinutes());
+                minuteHand.moveHand(date.getMinutes());
+
+                // デジタル時計の更新
+                const digitalClock = document.getElementById("digital-clock");
+                digitalClock.innerText = date.toLocaleTimeString();
+            }, 1000);
+        });
+    })();
+  </script>
+
+  <style>
+    /* アナログ時計全体のスタイル */
+    #analog {
+      height: 400px;
+      width: 100%;
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    /* アナログ時計の文字盤のスタイル */
+    #analog .analog-face {
+      border: 3px solid black;
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    /* 共通のdivスタイル */
+    #analog div {
+      box-sizing: content-box;
+    }
+
+    /* 目盛りのスタイル */
+    .analog-line1, .analog-line2 {
+      position: absolute;
+      left: 0;
+      z-index: 1;
+    }
+
+    .analog-line1 {
+      width: 5px;
+      height: 3px;
+      background: black;
+      top: calc(50% - 2px);
+    }
+
+    .analog-line2 {
+      width: 3px;
+      height: 2px;
+      background: black;
+      top: calc(50% - 1px);
+    }
+
+    /* 数字のスタイル */
+    .analog-text {
+      color: black;
+      font-size: 2em;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+    }
+
+    /* 時計の針のスタイル */
+    .analog-seconds {
+      background-color: red;
+      width: 5px;
+      position: absolute;
+      z-index: 10;
+      border-radius: 5px;
+    }
+
+    .analog-hours {
+      background-color: black;
+      width: 10px;
+      position: absolute;
+      z-index: 8;
+      border-radius: 5px;
+    }
+
+    .analog-minutes {
+      background-color: black;
+      width: 10px;
+      position: absolute;
+      z-index: 9;
+      border-radius: 5px;
+    }
+
+    /* 中心点のスタイル */
+    .analog-center, .analog-center:after {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 15;
+      border-radius: 50%;
+    }
+
+    .analog-center {
+      background-color: black;
+      height: 21px;
+      width: 21px;
+      transform: translate(-11px, -11px);
+    }
+
+    .analog-center:after {
+      content: "";
+      background-color: silver;
+      height: 17px;
+      width: 17px;
+      transform: translate(-9px, -9px);
+    }
+
+    /* 日付表示のスタイル */
+    #date-display {
+      text-align: center;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+
+    /* デジタル時計のラベルのスタイル */
+    #digital-clock-label {
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    /* デジタル時計のスタイル */
+    #digital-clock {
+      text-align: center;
+      font-size: 2em;
+    }
+  </style>
+
+</body>
+</html>
