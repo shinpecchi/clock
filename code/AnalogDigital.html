@@ -121,7 +121,7 @@
   <div id="digital-clock-label">デジタル時計</div>
   <div id="digital-clock">00:00:00</div>
   <div id="stopwatch-label">ストップウォッチ</div>
-  <div id="stopwatch-display">00:00:00</div>
+  <div id="stopwatch-display">00:00:00.000</div>
   <div class="buttons">
     <button id="start">スタート</button>
     <button id="stop">ストップ</button>
@@ -149,6 +149,15 @@
         const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
         const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
         const seconds = String(totalSeconds % 60).padStart(2, '0');
+        const milliseconds = String(ms % 1000).padStart(3, '0');
+        return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+      }
+
+      function formatElapsedTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
         return `${hours}:${minutes}:${seconds}`;
       }
 
@@ -161,7 +170,7 @@
         if (!stopwatchInterval) {
           startTime = Date.now() - elapsedTime;
           logOutput.value = `開始時間: ${new Date(startTime).toLocaleTimeString()}\n`;
-          stopwatchInterval = setInterval(updateStopwatch, 1000);
+          stopwatchInterval = setInterval(updateStopwatch, 10);
         }
       });
 
@@ -171,7 +180,7 @@
           stopwatchInterval = null;
           const stopTime = new Date();
           logOutput.value += `終了時間: ${stopTime.toLocaleTimeString()}\n`;
-          logOutput.value += `経過時間: ${stopwatchDisplay.textContent}\n`;
+          logOutput.value += `経過時間: ${formatElapsedTime(elapsedTime)}\n`;
         }
       });
 
@@ -179,7 +188,7 @@
         clearInterval(stopwatchInterval);
         stopwatchInterval = null;
         elapsedTime = 0;
-        stopwatchDisplay.textContent = "00:00:00";
+        stopwatchDisplay.textContent = "00:00:00.000";
         logOutput.value = '';
       });
 
