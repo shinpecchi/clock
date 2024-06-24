@@ -114,10 +114,16 @@
       font-size: 1.5em;
       margin-top: 20px;
     }
+    #date-display {
+      text-align: center;
+      font-size: 1em;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <div id="analog"></div>
+  <div id="date-display">2024/6/25(火)</div>
   <div id="digital-clock-label">デジタル時計</div>
   <div id="digital-clock">00:00:00</div>
   <div id="stopwatch-label">ストップウォッチ</div>
@@ -139,6 +145,7 @@
       const logButton = document.getElementById("log");
       const logOutput = document.getElementById("logOutput");
       const stopwatchDisplay = document.getElementById("stopwatch-display");
+      const dateDisplay = document.getElementById("date-display");
 
       let stopwatchInterval;
       let elapsedTime = 0;
@@ -313,6 +320,16 @@
       setInterval(() => {
         const now = new Date();
         currentTimeDisplay.textContent = now.toLocaleTimeString('ja-JP', { hour12: false });
+      }, 1000);
+      
+      const days = ['日', '月', '火', '水', '木', '金', '土'];
+      setInterval(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const date = now.getDate();
+        const day = days[now.getDay()];
+        dateDisplay.textContent = `${year}/${month}/${date}(${day})`;
       }, 1000);
     });
   </script>
