@@ -13,7 +13,7 @@
   <div id="analog"></div>
   
   <!-- 日付表示領域 -->
-  <div id="date-display">2024/6/25(火)</div>
+  <div id="date-display"></div>
   
   <!-- デジタル時計のラベル -->
   <div id="digital-clock-label">デジタル時計</div>
@@ -22,7 +22,7 @@
   <div id="digital-clock">00:00:00</div>
 
   <script>
-    (()=>{
+    (() => {
         // 親要素に新しいdivを追加する関数
         const addDiv = (parentDiv, className, callBack = null) => {
             const t = document.createElement("div");
@@ -35,13 +35,19 @@
         // アナログ時計の文字盤を作成する関数
         const createFace = () => {
             const analog = document.getElementById("analog");
-            const vp = [analog.clientWidth, analog.clientHeight];
-            const chokei = Math.min(...vp);
+            const analogFace = addDiv(analog, "analog-face");
 
-            const analogFace = addDiv(analog, "analog-face", (t) => {
-                [t.style.height, t.style.width] = [chokei + "px", chokei + "px"];
-                [t.style.top, t.style.left] = [(vp[1] - chokei) / 2 + "px", (vp[0] - chokei) / 2 + "px"];
-            });
+            const resizeFace = () => {
+                const vp = [analog.clientWidth, analog.clientHeight];
+                const chokei = Math.min(...vp);
+                analogFace.style.height = chokei + "px";
+                analogFace.style.width = chokei + "px";
+                analogFace.style.top = (vp[1] - chokei) / 2 + "px";
+                analogFace.style.left = (vp[0] - chokei) / 2 + "px";
+            }
+
+            window.addEventListener('resize', resizeFace);
+            resizeFace();
 
             const r60 = 360 / 60;
             const originX = analogFace.clientWidth / 2;
@@ -68,7 +74,8 @@
                 addDiv(analogFace, "analog-text", (t) => {
                     const mojiX = hankei + moziPos * Math.sin(deg * MathPi);
                     const mojiY = hankei - moziPos * Math.cos(deg * MathPi);
-                    [t.style.top, t.style.left] = [mojiY + "px", mojiX + "px"];
+                    t.style.top = mojiY + "px";
+                    t.style.left = mojiX + "px";
                     t.innerText = i === 0 ? "12" : i.toString();
                 });
             }
@@ -82,7 +89,7 @@
         const firstTransition = "transform 0.5s ease-out";
 
         // 時計の針オブジェクトのコンストラクタ
-        const handObj = function(className, {parentDiv, LengthPer, handGapPer, divNum}) {
+        const handObj = function (className, { parentDiv, LengthPer, handGapPer, divNum }) {
             const hankei = parentDiv.clientHeight / 2;
             const handLength = hankei * LengthPer / 100;
             const handGap = hankei * handGapPer / 100;
@@ -90,7 +97,8 @@
             const elm = addDiv(parentDiv, className);
 
             elm.style.height = (handLength + handGap) + "px";
-            [elm.style.top, elm.style.left] = [(hankei - handLength) + "px", (hankei - elm.clientWidth / 2) + "px"];
+            elm.style.top = (hankei - handLength) + "px";
+            elm.style.left = (hankei - elm.clientWidth / 2) + "px";
             elm.style.transformOrigin = `center ${handLength}px`;
             elm.style.transition = firstTransition;
 
@@ -108,10 +116,10 @@
         };
 
         // 時計の針を動かすメソッド
-        handObj.prototype.moveHand = function(val) {
+        handObj.prototype.moveHand = function (val) {
             if (this.currentValue === val) return;
             if (this.transitionFlg && ++this.transitionCount > 1) {
-                this.elm.style.transition = ""; 
+                this.elm.style.transition = "";
                 this.transitionFlg = false;
             }
             this.currentValue = val;
@@ -153,6 +161,15 @@
                 // デジタル時計の更新
                 const digitalClock = document.getElementById("digital-clock");
                 digitalClock.innerText = date.toLocaleTimeString();
+
+                // 日付の更新
+                const dateDisplay = document.getElementById("date-display");
+                dateDisplay.innerText = date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
             }, 1000);
         });
     })();
