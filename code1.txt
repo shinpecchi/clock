@@ -1,0 +1,77 @@
+Attribute VB_Name = "Module2"
+Sub ボタン_Click()
+    Dim ws As Worksheet
+    Dim nameRow As Long
+    Dim startCol As Long
+    Dim endCol As Long
+    Dim rng As Range
+    Dim cell As Range
+    Dim found As Boolean
+    
+    ' シートを設定
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' シート名を適宜変更してください
+    
+    ' 行番号と列番号をセルから取得
+    On Error GoTo ErrorHandler
+    
+        ' 行番号と列番号を設定
+        nameRow = ws.Range("E12").Value
+        startCol = ws.Range("E10").Value
+        endCol = ws.Range("E11").Value
+    
+    On Error GoTo 0
+    
+    ' 範囲を設定
+    On Error Resume Next
+        Set rng = ws.Range(ws.Cells(nameRow, startCol), ws.Cells(nameRow, endCol))
+    On Error GoTo 0
+    
+    ' 範囲が設定できなかった場合、処理を抜ける
+    If rng Is Nothing Then
+        MsgBox "範囲が正しく設定されていません。行番号と列番号を確認してください。", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 範囲を設定
+    Set rng = ws.Range(ws.Cells(nameRow, startCol), ws.Cells(nameRow, endCol))
+    
+    ' 範囲内のセルをチェック
+    found = False
+    For Each cell In rng
+        If cell.Value = "面" Then
+            found = True
+            Exit For
+        End If
+    Next cell
+    
+    ' 初期設定の入力規則リスト
+    Dim initialValidationList As String
+    initialValidationList = "　,○,休,面"
+    
+    ' 新しい入力規則リスト
+    Dim validationList As String
+    validationList = "　,○,休"
+    
+    ' 入力規則を設定
+    For Each cell In rng
+        With cell.Validation
+            .Delete
+            If found Then
+                .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+                xlBetween, Formula1:=validationList
+            Else
+                .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+                xlBetween, Formula1:=initialValidationList
+            End If
+            .IgnoreBlank = True
+            .InCellDropdown = True
+            .ShowInput = True
+            .ShowError = True
+        End With
+    Next cell
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "開始日、終了日、氏名が正しく取得できませんでした。", vbExclamation
+    Exit Sub
+End Sub
