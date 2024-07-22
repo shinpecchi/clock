@@ -1,0 +1,45 @@
+VBAコード
+
+①開始日、終了日、氏名が変わった時
+
+取得処理を実行する（参照渡し）
+
+②○、休み、面が入力された時
+
+セルの入力規則が変わる（値渡し）
+
+
+実行例
+
+Private Sub Worksheet_Change(ByVal Target As Range)
+    ' 条件1: Targetの値が「　,○,休,面」のいずれかの場合
+    If Not Intersect(Target, Me.Range("A1:B10")) Is Nothing Then
+        Select Case Target.Value
+            Case "　", "○", "休", "面"
+                Call Macro2
+                Dim myValue As Integer
+                myValue = Target.Value
+                Call Macro1(myValue)
+            Case "1/4", "1/7", "○○ ○○"
+                Dim myValue As Integer
+                myValue = Target.Value
+                Call Macro1(myValue)
+        End Select
+    End If
+End Sub
+
+' マクロ1 範囲設定 （参照渡し）
+Sub Macro1(ByRef value1 As Integer,ByRef value1 As Integer,ByRef value1 As Integer)
+    value = value * 2 ' 値を2倍にする
+    MsgBox "Macro1が実行されました。新しい値: " & value
+End Sub
+
+' マクロ2の定義（入力規則の変更）
+Sub Macro2()
+    With Range("A1").Validation
+        .Delete ' 既存の入力規則を削除
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+        xlBetween, Formula1:="はい,いいえ,どちらでもない"
+    End With
+    MsgBox "Macro2が実行されました。入力規則が変更されました。"
+End Sub
