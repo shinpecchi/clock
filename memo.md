@@ -1,3 +1,7 @@
+# 公開サイト
+<br><br>
+https://shinpecchi.github.io/clock/
+<br>
 # 参考サイト
 <br><br>
 【JavaScript】 簡単！デジタル-アナログ時計をつくろう<br>
